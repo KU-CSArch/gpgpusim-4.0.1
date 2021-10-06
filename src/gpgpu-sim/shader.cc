@@ -53,9 +53,9 @@
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 
-#if (RPT_LD_TIME)
-        std::map< address_type/*pc*/,std::map< new_addr_type/*addr*/, std::vector<unsigned/*sid*/>  > > Addr_list;
-#endif
+//#if (RPT_LD_TIME)
+//        std::map< address_type/*pc*/,std::map< new_addr_type/*addr*/, std::vector<unsigned/*sid*/>  > > Addr_list;
+//#endif
 
 
 mem_fetch *shader_core_mem_fetch_allocator::alloc(
@@ -948,7 +948,7 @@ void shader_core_stats::print_addr_list( FILE *fp ) const
   fprintf(fp, "JH : load inst address stat ------------------------\n");
   std::map< address_type, std::map<new_addr_type , std::vector<unsigned> > >::const_iterator it;
   // loop by PC(load instructions)
-  for ( it = Addr_list.begin(); it != Addr_list.end(); it++ ) {
+  for ( it = addr_list.begin(); it != addr_list.end(); it++ ) {
     fprintf(fp, "PC =%04X\n", it->first);
     tot_acc = 0;
     mul_acc = 0;
@@ -2769,15 +2769,15 @@ void ldst_unit::L1_latency_queue_cycle() {
       // track address access across SMs (to find GPGPU's inefficiency of data locality)
       const warp_inst_t load_check = mf_next->get_inst();
       if (load_check.is_load()) {
-        if (Addr_list.find(pc) != Addr_list.end()) { // pc exist
-          if (Addr_list[pc].find(addr) == Addr_list[pc].end()) { // addr don't exist
+        if (m_stats->addr_list.find(pc) != m_stats->addr_list.end()) { // pc exist
+          if (m_stats->addr_list[pc].find(addr) == m_stats->addr_list[pc].end()) { // addr don't exist
             std::vector<unsigned> new_sid;
             new_sid.assign(30,0);
             new_sid[sid]++;
-            Addr_list[pc].insert(std::pair<new_addr_type, std::vector<unsigned> >(addr, new_sid)); // new addr entry
+            m_stats->addr_list[pc].insert(std::pair<new_addr_type, std::vector<unsigned> >(addr, new_sid)); // new addr entry
             
           } else {
-            Addr_list[pc][addr][sid]++;
+            m_stats->addr_list[pc][addr][sid]++;
           }
         } else { // new pc entry
           std::vector<unsigned> new_sid;
@@ -2785,7 +2785,7 @@ void ldst_unit::L1_latency_queue_cycle() {
           new_sid[sid]++;
           std::map<new_addr_type, std::vector< unsigned> > new_addr;
           new_addr.insert(std::pair<new_addr_type, std::vector<unsigned> >(addr, new_sid));
-          Addr_list.insert(std::pair<address_type, std::map<new_addr_type, std::vector<unsigned> > >(pc, new_addr));	
+          m_stats->addr_list.insert(std::pair<address_type, std::map<new_addr_type, std::vector<unsigned> > >(pc, new_addr));	
         }      
       }
 #endif
