@@ -74,9 +74,9 @@
 
 #define WRITE_MASK_SIZE 8
 
-#if (RPT_LD_TIME)
-extern std::map< address_type/*pc*/,std::map< new_addr_type/*addr*/, std::vector<unsigned/*sid*/>  > > Addr_list;
-#endif
+//#if (RPT_LD_TIME)
+//extern std::map< address_type/*pc*/,std::map< new_addr_type/*addr*/, std::vector<unsigned/*sid*/>  > > Addr_list;
+//#endif
 
 
 class gpgpu_context;
@@ -1921,6 +1921,7 @@ struct shader_core_stats_pod {
 	std::map<address_type/*PC*/, ldtime_stat_acc> m_ldtime_stat_pc;
 	// JH : cta stat
 	std::map<unsigned/*cta_id*/, cta_stat> m_cta_stat;
+	std::map< address_type/*pc*/,std::map< new_addr_type/*addr*/, std::vector<unsigned/*sid*/>  > > addr_list;
 #endif	// RPT_LD_TIME
 
   
@@ -2101,6 +2102,7 @@ class shader_core_stats : public shader_core_stats_pod {
     m_ldtime_stat_pc.clear();
     // JH : cta stat
     m_cta_stat.clear();
+    addr_list.clear();
   #endif
 
   #if RPT_STDERR // JH : file pointers are set to stderr when GPGPU-sim runs on a cluster
