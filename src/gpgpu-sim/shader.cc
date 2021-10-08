@@ -945,11 +945,12 @@ void shader_core_stats::print_addr_list( FILE *fp ) const
   unsigned sm_count = 0;
   unsigned m_count = 0;
   unsigned temp = 0;
-  fprintf(fp, "JH : load inst address stat ------------------------\n");
+  fprintf(fp, "JH_Summary, load inst address stat ------------------------\n");
+  fprintf(fp, "JH_Addr, PC, num_SMs/mul_addr, mul_addr, tot_addr, mul_acc, tot_acc\n");
   std::map< address_type, std::map<new_addr_type , std::vector<unsigned> > >::const_iterator it;
   // loop by PC(load instructions)
   for ( it = addr_list.begin(); it != addr_list.end(); it++ ) {
-    fprintf(fp, "PC =%04X\n", it->first);
+    fprintf(fp, "JH_Addr, %04X, ", it->first);
     tot_acc = 0;
     mul_acc = 0;
     mul_addr = 0;
@@ -978,13 +979,15 @@ void shader_core_stats::print_addr_list( FILE *fp ) const
       //fprintf(fp, "Address = %llX\t", it2->first );
       //fprintf(fp, "total access counts of an address: %d\n", temp);
     }
-    fprintf(fp, "SM counts of total multiple accessed address / total multiple accessed address counts = %3.3f\n",(float)sm_count/mul_addr);
-    fprintf(fp, "count for multiple address(accessed by multiple SMs): %d\n", mul_addr);
-    fprintf(fp, "total count for address : %d\n", tot_addr);
-    fprintf(fp, "count for multiple access by multiple SMs : %d\n", mul_acc);
-    fprintf(fp, "total count for access of PC : %d\n", tot_acc);
-    fprintf(fp, "----------------------------------------------\n");
-  } 
+    fprintf(fp, "%3.3f, %d, %d, %d\n", (float)sm_count/mul_addr, mul_addr, tot_addr, mul_acc, tot_acc);
+   // fprintf(fp, "SM counts of total multiple accessed address / total multiple accessed address counts = %3.3f\n",(float)sm_count/mul_addr);
+   // fprintf(fp, "count for multiple address(accessed by multiple SMs): %d\n", mul_addr);
+   // fprintf(fp, "total count for address : %d\n", tot_addr);
+   // fprintf(fp, "count for multiple access by multiple SMs : %d\n", mul_acc);
+   // fprintf(fp, "total count for access of PC : %d\n", tot_acc);
+   // fprintf(fp, "----------------------------------------------\n");
+  }
+  fprintf(fp, "----------------------------------------------\n");
 }
 #endif // JH : address stat print
 
@@ -1000,8 +1003,9 @@ void shader_core_stats::print_ld_time_bar( FILE *fp ) const
   unsigned long long num_cta = 0;
   float avg_cta = 0;
   float cta_coef = 0;
-  fprintf(fp, "JH ---- CTA stat --------------------------------------\n ");
-  for ( id=m_cta_stat.begin(); id!=m_cta_stat.end(); ++id ) { // stat per PC
+  fprintf(fp, "JH_Summary, ---- CTA stat --------------------------------------\n ");
+  fprintf(fp, "JH_CTA, CTA_ID, max warp cycle, min warp cycle, warp coef -------------\n");
+  for ( id=m_cta_stat.begin(); id!=m_cta_stat.end(); ++id ) { // stat per CTA
     unsigned cta_id = id->first;
     cta_stat cstat = id->second;
     
@@ -1015,7 +1019,7 @@ void shader_core_stats::print_ld_time_bar( FILE *fp ) const
     float warp_avg = 0;
     float warp_coef = 0;
     float avg_temp = 0;
-    for (unsigned long long k = 1; k < cstat.is_cycle.size(); ++k) { // stat per CTA
+    for (unsigned long long k = 1; k < cstat.is_cycle.size(); ++k) { 
       temp = cstat.wb_cycle[k] - cstat.is_cycle[k];
       if (temp > 0) { 
         if (min <= 0) min = temp;
@@ -1034,14 +1038,13 @@ void shader_core_stats::print_ld_time_bar( FILE *fp ) const
       cta_coef += warp_coef;
       num_cta++; 
     }
-
-    fprintf(fp, "JH, CTA ID : %d\t", cta_id);
-    fprintf(fp, "max warp cycle : %lld, min warp cycle : %lld, warp coef : %f\n", max, min, warp_coef );
+    fprintf(fp, "JH_CTA, %d,  %lld,  %lld,  %f\n", cta_id, max, min, warp_coef );
     if (max > max_cta) max_cta = max;
     if (min_cta <= 0) min_cta = min;
     if (min < min_cta) min_cta = min;
   }
-  fprintf(fp, "JH_Summary, Total Max CTA cycle : %lld, Total Min CTA cycle : %lld, Avg CTA cycle : %f CTA coef %f\n", max_cta, min_cta, (float) avg_cta/num_cta, cta_coef/num_cta );
+  fprintf(fp, "JH_Summary, Total Max CTA cycle, Total Min CTA cycle, Avg CTA cycle, CTA coef\n");
+  fprintf(fp, "\t\t%lld, %lld, %f, %f\n", max_cta, min_cta, (float) avg_cta/num_cta, cta_coef/num_cta );
   fprintf(fp, "---------------------------------------\n");
 
   fprintf(stdout, "GK_Summary, ----- LD time --------------------------------\n");
