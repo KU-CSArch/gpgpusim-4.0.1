@@ -979,7 +979,7 @@ void shader_core_stats::print_addr_list( FILE *fp ) const
       //fprintf(fp, "Address = %llX\t", it2->first );
       //fprintf(fp, "total access counts of an address: %d\n", temp);
     }
-    fprintf(fp, "%3.3f, %d, %d, %d\n", (float)sm_count/mul_addr, mul_addr, tot_addr, mul_acc, tot_acc);
+    fprintf(fp, "%3.3f, %d, %d, %d, %d\n", (float)sm_count/mul_addr, mul_addr, tot_addr, mul_acc, tot_acc);
    // fprintf(fp, "SM counts of total multiple accessed address / total multiple accessed address counts = %3.3f\n",(float)sm_count/mul_addr);
    // fprintf(fp, "count for multiple address(accessed by multiple SMs): %d\n", mul_addr);
    // fprintf(fp, "total count for address : %d\n", tot_addr);
