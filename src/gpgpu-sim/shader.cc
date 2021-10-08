@@ -999,56 +999,49 @@ void shader_core_stats::print_ld_time_bar( FILE *fp ) const
   unsigned long long min_cta = 0;
   unsigned long long num_cta = 0;
   float avg_cta = 0;
+  float cta_coef = 0;
   fprintf(fp, "JH ---- CTA stat --------------------------------------\n ");
-  for ( id=m_cta_stat.begin(); id!=m_cta_stat.end(); ++id ) {
+  for ( id=m_cta_stat.begin(); id!=m_cta_stat.end(); ++id ) { // stat per PC
     unsigned cta_id = id->first;
     cta_stat cstat = id->second;
     
     //analyze cta time
-    //min_cta = cstat.wb_cycle[0];
-  /*  unsigned long long max_is = cstat.is_cycle[0];
-    unsigned long long min_is = cstat.is_cycle[0];
-    unsigned long long max_wb = cstat.wb_cycle[0];
-    unsigned long long min_wb = cstat.wb_cycle[0];
-    for (unsigned long long k = 1; k < cstat.is_cycle.size(); ++k) {
-      if (cstat.is_cycle[k] < min_is ) min_is = cstat.is_cycle[k];
-      if (cstat.is_cycle[k] > max_is ) max_is = cstat.is_cycle[k];
-      if (cstat.wb_cycle[k] < min_wb ) min_wb = cstat.wb_cycle[k];
-      if (cstat.wb_cycle[k] > max_wb ) max_wb = cstat.wb_cycle[k];
-    }
-    unsigned long long gap_is = max_is - min_is;
-    unsigned long long gap_wb = max_wb - min_wb; 
-   */
     unsigned long long max = cstat.wb_cycle[0] - cstat.is_cycle[0];
     unsigned long long min = cstat.wb_cycle[0] - cstat.is_cycle[0];
     unsigned long long avg = 0;
     unsigned long long num = 0;
     unsigned long long temp = 0;
+    unsigned long long warp_total = 0;
+    float warp_avg = 0;
+    float warp_coef = 0;
     float avg_temp = 0;
-    for (unsigned long long k = 1; k < cstat.is_cycle.size(); ++k) {
+    for (unsigned long long k = 1; k < cstat.is_cycle.size(); ++k) { // stat per CTA
       temp = cstat.wb_cycle[k] - cstat.is_cycle[k];
-      if (min <= 0) min = temp;
-      if (temp < min ) min = temp;
-      if (temp > max ) max = temp;
-      if (max > 0) {
-      	avg += max;
+      if (temp > 0) { 
+        if (min <= 0) min = temp;
+        if (temp < min ) min = temp;
+        if (temp > max ) max = temp;
+        if (max > 0) avg += max;
+        warp_total += temp;
 	num++;
       }
     }
     avg_temp = (float) avg/num;
-
+    warp_avg = (float) warp_total/num;
+    warp_coef = warp_avg/max;
     if (avg_temp > 0) {
       avg_cta += avg_temp;
+      cta_coef += warp_coef;
       num_cta++; 
     }
 
     fprintf(fp, "JH, CTA ID : %d\t", cta_id);
-    fprintf(fp, "max warp cycle : %lld, min warp cycle : %lld\n", max, min );
+    fprintf(fp, "max warp cycle : %lld, min warp cycle : %lld, warp coef : %f\n", max, min, warp_coef );
     if (max > max_cta) max_cta = max;
     if (min_cta <= 0) min_cta = min;
     if (min < min_cta) min_cta = min;
   }
-  fprintf(fp, "JH_Summary, Total Max CTA cycle : %lld, Total Min CTA cycle : %lld, Avg CTA cycle : %f\n", max_cta, min_cta, (float) avg_cta/num_cta );
+  fprintf(fp, "JH_Summary, Total Max CTA cycle : %lld, Total Min CTA cycle : %lld, Avg CTA cycle : %f CTA coef %f\n", max_cta, min_cta, (float) avg_cta/num_cta, cta_coef/num_cta );
   fprintf(fp, "---------------------------------------\n");
 
   fprintf(stdout, "GK_Summary, ----- LD time --------------------------------\n");
